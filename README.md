@@ -2,7 +2,7 @@
 
 Business validation for e-commerce orders.
 
-OrderGuard helps e-commerce applications detect invalid or inconsistent order data before it reaches a database, ERP, accounting system, fulfillment workflow, or other business system.
+OrderGuard helps e-commerce applications detect invalid or inconsistent order data before it reaches a database, ERP system, accounting system, fulfillment workflow, or other business system.
 
 ## Why OrderGuard?
 
@@ -90,11 +90,11 @@ An invalid order returns structured validation errors:
 }
 ```
 
-Each error contains:
+Each validation error contains:
 
 * `code` — machine-readable error code
 * `message` — human-readable explanation
-* `field` — the related order field when available
+* `field` — related order field when available
 
 ## Current Validation Rules
 
@@ -102,25 +102,25 @@ Each error contains:
 
 * Order ID is required
 * Customer name is required
-* Customer email must have a valid email format
-* Currency must use a 3-letter code
+* Customer email must be valid
+* Currency must be a 3-letter code
 * Order status must be supported
 * At least one order item is required
 
-### Items
+### Order Items
 
 * Item name is required
 * Quantity must be a positive integer
 * Unit price must be a non-negative number
-* Subtotal must match the sum of item quantities × unit prices
+* Subtotal must match the sum of `quantity × unitPrice` for all items
 
 ### Financial Fields
 
 * Discount cannot be negative
-* Discount cannot exceed subtotal
+* Discount cannot exceed the subtotal
 * Tax cannot be negative
 * Shipping cannot be negative
-* Total must be non-negative
+* Total cannot be negative
 * Total must match:
 
 ```text
@@ -141,19 +141,17 @@ refunded
 
 ## TypeScript Support
 
-OrderGuard is written in TypeScript and provides TypeScript declarations for its public API.
+OrderGuard is written in TypeScript and provides type declarations for its public API.
 
-The main exported types include:
+Main exported types include:
 
-```ts
-Order
-OrderItem
-Customer
-OrderStatus
-ValidationError
-ValidationErrorCode
-ValidationResult
-```
+* `Order`
+* `OrderItem`
+* `Customer`
+* `OrderStatus`
+* `ValidationError`
+* `ValidationErrorCode`
+* `ValidationResult`
 
 ## API
 
@@ -189,7 +187,7 @@ interface ValidationError {
 OrderGuard can be used before:
 
 * Saving orders to a database
-* Sending orders to an ERP
+* Sending orders to an ERP system
 * Processing payments
 * Starting fulfillment
 * Generating invoices
@@ -199,27 +197,27 @@ OrderGuard can be used before:
 
 ## Example Scenario
 
-An e-commerce application receives an order containing:
+An e-commerce application receives:
 
 ```text
-2 × Wireless Mouse × $25
+2 x Wireless Mouse x $25
 ```
 
 The correct subtotal is:
 
 ```text
-2 × $25 = $50
+2 x $25 = $50
 ```
 
 If the application receives a subtotal of `$40`, OrderGuard detects the inconsistency before the order continues through the business workflow.
 
-This allows the application to handle the invalid order instead of silently accepting inconsistent financial data.
+This allows the application to handle invalid order data instead of silently accepting inconsistent financial information.
 
 ## Project Status
 
-OrderGuard is currently an early-stage library focused on practical e-commerce order validation.
+OrderGuard is currently an early-stage library focused on practical business validation for e-commerce orders.
 
-The current version is:
+Current version:
 
 ```text
 0.1.0
