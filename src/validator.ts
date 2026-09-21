@@ -1,4 +1,5 @@
-import { Order, OrderStatus } from "./types";
+import type { Order, OrderStatus } from "./types.js";
+import type { CustomRule, ValidationOptions } from "./rules.js";
 
 export type ValidationErrorCode =
   | "INVALID_ORDER_ID"
@@ -18,7 +19,7 @@ export type ValidationErrorCode =
   | "TOTAL_MISMATCH";
 
 export interface ValidationError {
-  code: ValidationErrorCode;
+  code: ValidationErrorCode | string;
   message: string;
   field?: string;
 }
@@ -38,7 +39,10 @@ const validStatuses: OrderStatus[] = [
   "refunded",
 ];
 
-export function validateOrder(order: Order): ValidationResult {
+export function validateOrder(
+  order: Order,
+  options?: ValidationOptions,
+): ValidationResult {
   const errors: ValidationError[] = [];
 
   if (!order.id || order.id.trim() === "") {
@@ -148,7 +152,11 @@ export function validateOrder(order: Order): ValidationResult {
     ) {
       errors.push({
         code: "INVALID_SUBTOTAL",
-        message: `Subtotal does not match the sum of order items. Expected ${calculatedSubtotal.toFixed(2)}, received ${Number.isFinite(order.subtotal) ? order.subtotal.toFixed(2) : "invalid"}.`,
+        message: `Subtotal does not match the sum of order items. Expected ${calculatedSubtotal.toFixed(2)}, received ${
+          Number.isFinite(order.subtotal)
+            ? order.subtotal.toFixed(2)
+            : "invalid"
+        }.`,
         field: "subtotal",
       });
     }
@@ -224,6 +232,20 @@ export function validateOrder(order: Order): ValidationResult {
         message: `Total does not match the order calculation. Expected ${expectedTotal.toFixed(2)}, received ${order.total.toFixed(2)}.`,
         field: "total",
       });
+    }
+  }
+
+  if (options?.rules) {
+    for (const rule of options.rules) {
+      const passed = rule.validate(order);
+
+      if (!passed) {
+        errors.push({
+          code: rule.code,
+          message: rule.message,
+          field: rule.field,
+        });
+      }
     }
   }
 

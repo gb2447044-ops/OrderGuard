@@ -7,7 +7,7 @@ const validStatuses = [
     "cancelled",
     "refunded",
 ];
-export function validateOrder(order) {
+export function validateOrder(order, options) {
     const errors = [];
     if (!order.id || order.id.trim() === "") {
         errors.push({
@@ -95,7 +95,9 @@ export function validateOrder(order) {
                 Math.abs(calculatedSubtotal - order.subtotal) > 0.01)) {
             errors.push({
                 code: "INVALID_SUBTOTAL",
-                message: `Subtotal does not match the sum of order items. Expected ${calculatedSubtotal.toFixed(2)}, received ${Number.isFinite(order.subtotal) ? order.subtotal.toFixed(2) : "invalid"}.`,
+                message: `Subtotal does not match the sum of order items. Expected ${calculatedSubtotal.toFixed(2)}, received ${Number.isFinite(order.subtotal)
+                    ? order.subtotal.toFixed(2)
+                    : "invalid"}.`,
                 field: "subtotal",
             });
         }
@@ -153,6 +155,18 @@ export function validateOrder(order) {
                 message: `Total does not match the order calculation. Expected ${expectedTotal.toFixed(2)}, received ${order.total.toFixed(2)}.`,
                 field: "total",
             });
+        }
+    }
+    if (options?.rules) {
+        for (const rule of options.rules) {
+            const passed = rule.validate(order);
+            if (!passed) {
+                errors.push({
+                    code: rule.code,
+                    message: rule.message,
+                    field: rule.field,
+                });
+            }
         }
     }
     return {

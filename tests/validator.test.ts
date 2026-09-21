@@ -1,6 +1,8 @@
+
 import { describe, expect, it } from "vitest";
 import { validateOrder } from "../src/validator";
 import { Order } from "../src/types";
+import type { CustomRule } from "../src/rules";
 
 const validOrder: Order = {
   id: "ORD-1001",
@@ -27,7 +29,6 @@ const validOrder: Order = {
 describe("validateOrder", () => {
   it("accepts a valid order", () => {
     const result = validateOrder(validOrder);
-
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
@@ -348,5 +349,60 @@ describe("validateOrder", () => {
         "Total does not match the order calculation. Expected 60.00, received 50.00.",
       field: "total",
     });
+  });
+
+  it("accepts an order when a custom rule passes", () => {
+    const rule: CustomRule = {
+      code: "MAX_DISCOUNT_10_PERCENT",
+      message: "Discount cannot exceed 10% of the subtotal.",
+      field: "discount",
+      validate: (order) => order.discount <= order.subtotal * 0.1,
+    };
+
+    const order: Order = {
+      ...validOrder,
+      discount: 5,
+      total: 45,
+    };
+
+    const result = validateOrder(order, {
+      rules: [rule],
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("rejects an order when a custom rule fails", () => {
+    const rule: CustomRule = {
+      code: "MAX_DISCOUNT_10_PERCENT",
+      message: "Discount cannot exceed 10% of the subtotal.",
+      field: "discount",
+      validate: (order) => order.discount <= order.subtotal * 0.1,
+    };
+
+    const order: Order = {
+      ...validOrder,
+      discount: 10,
+      total: 40,
+    };
+
+    const result = validateOrder(order, {
+      rules: [rule],
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual({
+      code: "MAX_DISCOUNT_10_PERCENT",
+      message: "Discount cannot exceed 10% of the subtotal.",
+      field: "discount",
+    });
+  });
+
+  it("keeps the default validation behavior without custom rules", () => {
+    const result = validateOrder(validOrder);
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
   });
 });
