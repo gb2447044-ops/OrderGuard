@@ -1,7 +1,7 @@
 {
   "name": "orderguard",
   "version": "0.1.0",
-  "description": "Business validation library for e-commerce orders.",
+  "description": "Business validation for e-commerce orders.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -29,6 +29,14 @@
     "business-validation",
     "typescript"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gb2447044-ops/OrderGuard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gb2447044-ops/OrderGuard/issues"
+  },
+  "homepage": "https://github.com/gb2447044-ops/OrderGuard#readme",
   "devDependencies": {
     "typescript": "^7.0.2",
     "vitest": "^4.1.11"
